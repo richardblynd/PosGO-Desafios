@@ -30,7 +30,7 @@ Ao finalizar, envie o link do repositório para correção.
 
 SERVER:
     - [OK] expor o server na porta 8080
-    - criar um endpoint /cotacao 
+    - [OK] criar um endpoint /cotacao 
         - [OK] consumir a API https://economia.awesomeapi.com.br/json/last/USD-BRL e retornar no formato JSON o resultado
             - [OK] timeout maximo 200ms usando o package "context"
                 - [OK] retornar erro nos logs caso o tempo de execução seja insuficiente
@@ -41,6 +41,6 @@ SERVER:
 
 CLIENT:
     - realizar uma requisição HTTP no para o server.go solicitando a cotação do dólar
-        - timeout maximo 300ms utilizando o package "context"
-            - retornar erro nos logs caso o tempo de execução seja insuficiente
-        - salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
+        - [OK] timeout maximo 300ms utilizando o package "context"
+            - [OK] retornar erro nos logs caso o tempo de execução seja insuficiente
+        - [OK] salvar a cotação atual em um arquivo "cotacao.txt" no formato: Dólar: {valor}
