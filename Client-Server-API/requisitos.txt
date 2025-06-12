@@ -36,8 +36,8 @@ SERVER:
                 - [OK] retornar erro nos logs caso o tempo de execução seja insuficiente
         - [OK] retornar apenas o valor atual do câmbio (campo "bid" do JSON)        
         - [OK] registrar no banco de dados SQLite cada cotação recebida
-            - timeout maximo 10ms usando o package "context"
-                - retornar erro nos logs caso o tempo de execução seja insuficiente
+            - [OK] timeout maximo 10ms usando o package "context"
+                - [OK] retornar erro nos logs caso o tempo de execução seja insuficiente
 
 CLIENT:
     - realizar uma requisição HTTP no para o server.go solicitando a cotação do dólar

@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -19,21 +21,21 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type DollarQuote struct {
-	USDBRL struct {
-		Code       string `json:"code"`
-		Codein     string `json:"codein"`
-		Name       string `json:"name"`
-		High       string `json:"high"`
-		Low        string `json:"low"`
-		VarBid     string `json:"varBid"`
-		PctChange  string `json:"pctChange"`
-		Bid        string `json:"bid"`
-		Ask        string `json:"ask"`
-		Timestamp  string `json:"timestamp"`
-		CreateDate string `json:"create_date"`
-	} `json:"USDBRL"`
+type Quote struct {
+	Code       string `json:"code"`
+	Codein     string `json:"codein"`
+	Name       string `json:"name"`
+	High       string `json:"high"`
+	Low        string `json:"low"`
+	VarBid     string `json:"varBid"`
+	PctChange  string `json:"pctChange"`
+	Bid        string `json:"bid"`
+	Ask        string `json:"ask"`
+	Timestamp  string `json:"timestamp"`
+	CreateDate string `json:"create_date"`
 }
+
+type QuoteResponse map[string]Quote
 
 type GetQuoteResult struct {
 	Cotacao float64 `json:"cotacao"`
@@ -41,6 +43,8 @@ type GetQuoteResult struct {
 
 type Cotacao struct {
 	ID      uint    `gorm:"primaryKey"`
+	Origem  string  `gorm:"type:TEXT"`
+	Destino string  `gorm:"type:TEXT"`
 	Cotacao float64 `gorm:"type:REAL"`
 }
 
@@ -55,8 +59,8 @@ var (
 
 func getQuoteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	codeParam := vars["code"]
-	codeinParam := vars["codein"]
+	codeParam := strings.ToUpper(vars["code"])
+	codeinParam := strings.ToUpper(vars["codein"])
 
 	quote, err := getQuote(codeParam, codeinParam)
 
@@ -70,7 +74,7 @@ func getQuoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errDb := salvarCotacao(quote.Cotacao)
+	errDb := salvarCotacao(quote.Cotacao, codeParam, codeinParam)
 
 	if errDb != nil {
 		http.Error(w, "Erro ao salvar cotação no banco de dados", http.StatusInternalServerError)
@@ -101,7 +105,7 @@ func getQuote(code, codein string) (*GetQuoteResult, error) {
 	if err != nil {
 
 		if ctx.Err() == context.DeadlineExceeded {
-			fmt.Println("Timeout atingido após 200ms")
+			fmt.Println("Timeout atingido após" + externaApiTimeout.String() + "ms")
 			return nil, ErrTimeout
 		}
 
@@ -114,13 +118,21 @@ func getQuote(code, codein string) (*GetQuoteResult, error) {
 
 	defer resp.Body.Close()
 
-	var dollarQuote DollarQuote
-
-	if err := json.NewDecoder(resp.Body).Decode(&dollarQuote); err != nil {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
 
-	quoteStr := dollarQuote.USDBRL.Bid
+	var quoteResponse QuoteResponse
+
+	err = json.Unmarshal(bodyBytes, &quoteResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	quote := quoteResponse[code+codein]
+
+	quoteStr := quote.Bid
 	quoteFloat, err := strconv.ParseFloat(quoteStr, 64)
 
 	if err != nil {
@@ -132,12 +144,14 @@ func getQuote(code, codein string) (*GetQuoteResult, error) {
 	return &result, nil
 }
 
-func salvarCotacao(valor float64) error {
+func salvarCotacao(valor float64, origem string, destino string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	cotacao := Cotacao{
 		Cotacao: valor,
+		Origem:  origem,
+		Destino: destino,
 	}
 
 	if err := db.WithContext(ctx).Create(&cotacao).Error; err != nil {
