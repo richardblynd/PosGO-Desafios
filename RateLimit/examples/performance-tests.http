@@ -1,0 +1,111 @@
+### Testes de Performance e Stress
+### Para testar o comportamento sob carga
+### Configure limites altos para estes testes
+
+@baseUrl = http://localhost:8080
+
+###
+# Teste de Performance - Requisições Sequenciais
+# Para medir latência e throughput
+
+### Health check (baseline)
+GET {{baseUrl}}/health
+
+### Requisições com token premium (limite alto)
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+# Teste de Concorrência Simulada
+# Execute múltiplas instâncias deste arquivo simultaneamente
+
+### Requisição concorrente 1
+GET {{baseUrl}}/api/v1/users
+API_KEY: load-test-1
+
+### Requisição concorrente 2  
+GET {{baseUrl}}/api/v1/users
+API_KEY: load-test-2
+
+### Requisição concorrente 3
+GET {{baseUrl}}/api/v1/users
+API_KEY: load-test-3
+
+###
+# Teste de Diferentes Endpoints
+# Verificar se o rate limiting afeta todos os endpoints
+
+### Endpoint Users
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+### Endpoint Orders
+GET {{baseUrl}}/api/v1/orders
+API_KEY: premium
+
+### Health (não deve ser rate limited)
+GET {{baseUrl}}/health
+
+###
+# Teste de Headers e Extração de IP
+# Diferentes cenários de proxy/load balancer
+
+### Sem headers especiais (IP direto)
+GET {{baseUrl}}/api/v1/users
+
+### Com X-Forwarded-For
+GET {{baseUrl}}/api/v1/users
+X-Forwarded-For: 192.168.1.100
+
+### Com X-Real-IP
+GET {{baseUrl}}/api/v1/users
+X-Real-IP: 192.168.1.101
+
+### Com múltiplos IPs no X-Forwarded-For (deve usar o primeiro)
+GET {{baseUrl}}/api/v1/users
+X-Forwarded-For: 192.168.1.102, 10.0.0.1, 172.16.0.1
+
+###
+# Teste de Tokens Inválidos/Especiais
+
+### Token vazio (deve usar limite por IP)
+GET {{baseUrl}}/api/v1/users
+API_KEY: 
+
+### Token não configurado (usa limite padrão de token)
+GET {{baseUrl}}/api/v1/users
+API_KEY: unknown-token
+
+### Token muito longo
+GET {{baseUrl}}/api/v1/users
+API_KEY: very-long-token-that-should-still-work-with-default-limits-12345
+
+###
+# Monitoramento de Headers de Rate Limiting
+# Observe como os valores mudam
+
+### Primeira requisição (remaining alto)
+GET {{baseUrl}}/api/v1/users
+API_KEY: abc123
+
+### Segunda requisição (remaining menor)
+GET {{baseUrl}}/api/v1/users  
+API_KEY: abc123
+
+### Terceira requisição (remaining ainda menor)
+GET {{baseUrl}}/api/v1/users
+API_KEY: abc123
+
+###
+# Headers esperados:
+# X-RateLimit-Limit: [limite por segundo]
+# X-RateLimit-Remaining: [requisições restantes]
+# X-RateLimit-Reset: [timestamp do próximo reset]

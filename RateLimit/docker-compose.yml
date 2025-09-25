@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ratelimiter-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - ratelimiter-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ratelimiter:
+    build: .
+    container_name: ratelimiter-app
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - STORAGE_TYPE=redis
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      - IP_RATE_LIMIT=10
+      - IP_BLOCK_DURATION=5m
+      - TOKEN_RATE_LIMIT=100
+      - TOKEN_BLOCK_DURATION=5m
+      - TOKEN_ABC123_RATE_LIMIT=50
+      - TOKEN_ABC123_BLOCK_DURATION=10m
+      - TOKEN_XYZ789_RATE_LIMIT=200
+      - TOKEN_XYZ789_BLOCK_DURATION=2m
+      - TOKEN_PREMIUM_RATE_LIMIT=1000
+      - TOKEN_PREMIUM_BLOCK_DURATION=1m
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ratelimiter-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
+networks:
+  ratelimiter-network:
+    driver: bridge

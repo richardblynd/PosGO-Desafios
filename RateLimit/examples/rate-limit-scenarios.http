@@ -1,0 +1,113 @@
+### Testes de Rate Limiting - Cenários Específicos
+### Configure os limites baixos para ver o bloqueio mais facilmente
+### Sugerido: IP_RATE_LIMIT=3, TOKEN_RATE_LIMIT=5
+
+@baseUrl = http://localhost:8080
+
+###
+# Cenário 1: Testar Limite por IP
+# Execute estas 4 requisições rapidamente (limite sugerido: 3)
+
+### Requisição 1 (deve passar)
+GET {{baseUrl}}/api/v1/users
+
+### Requisição 2 (deve passar)  
+GET {{baseUrl}}/api/v1/users
+
+### Requisição 3 (deve passar)
+GET {{baseUrl}}/api/v1/users
+
+### Requisição 4 (deve ser bloqueada - 429)
+GET {{baseUrl}}/api/v1/users
+
+###
+# Cenário 2: Token sobrepõe IP
+# Mesmo com IP bloqueado, token premium deve funcionar
+
+### Esta deve funcionar mesmo com IP bloqueado
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+# Cenário 3: Teste de Bloqueio Temporal
+# Após ser bloqueado, aguarde o tempo de bloqueio configurado
+
+### Verifique se ainda está bloqueado
+GET {{baseUrl}}/api/v1/users
+
+### Aguarde IP_BLOCK_DURATION (ex: 5 minutos) e teste novamente
+GET {{baseUrl}}/api/v1/users
+
+###
+# Cenário 4: Diferentes Tokens, Diferentes Limites
+
+### Token com limite específico (50 req/s)
+GET {{baseUrl}}/api/v1/users  
+API_KEY: abc123
+
+### Token com limite maior (200 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: xyz789
+
+### Token premium (1000 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+# Cenário 5: Headers de Rate Limiting
+# Observe os headers X-RateLimit-* na resposta
+
+### Requisição para verificar headers
+GET {{baseUrl}}/api/v1/users
+API_KEY: abc123
+
+###
+# Cenário 6: Teste com IP específico via X-Forwarded-For
+# Simula requisições vindas de proxy/load balancer
+
+### Simula requisição de IP específico
+GET {{baseUrl}}/api/v1/users
+X-Forwarded-For: 203.0.113.1
+
+### Outra requisição do mesmo IP
+GET {{baseUrl}}/api/v1/users
+X-Forwarded-For: 203.0.113.1
+
+### Requisição de IP diferente (deve ter limite separado)
+GET {{baseUrl}}/api/v1/users
+X-Forwarded-For: 203.0.113.2
+
+###
+# Cenário 7: Teste de Carga Simulada
+# Execute estas em sequência rápida para simular alta carga
+
+### Burst de requisições sem token (IP limiting)
+GET {{baseUrl}}/api/v1/users
+###
+GET {{baseUrl}}/api/v1/users
+###
+GET {{baseUrl}}/api/v1/users
+###
+GET {{baseUrl}}/api/v1/users
+###
+GET {{baseUrl}}/api/v1/users
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+# Cenário 8: Validação de Resposta de Erro
+# Quando bloqueado, deve retornar formato específico
+
+### Esta deve retornar 429 com mensagem específica
+GET {{baseUrl}}/api/v1/users
+
+###
+# Esperado quando bloqueado:
+# Status: 429 Too Many Requests
+# Body: {
+#   "error": "Too Many Requests",
+#   "message": "you have reached the maximum number of requests or actions allowed within a certain time frame",
+#   "code": 429,
+#   "timestamp": "2023-09-24T10:30:00Z"
+# }
+# Headers: Retry-After, X-RateLimit-*

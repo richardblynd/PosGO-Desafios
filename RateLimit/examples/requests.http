@@ -1,0 +1,83 @@
+### Rate Limiter API Tests
+### Arquivo de exemplo para testar o rate limiter
+### Use com REST Client (VS Code) ou similar
+
+@baseUrl = http://localhost:8080
+
+###
+# Health Check
+GET {{baseUrl}}/health
+
+###
+# Teste básico - Endpoint Users
+GET {{baseUrl}}/api/v1/users
+
+###
+# Teste básico - Endpoint Orders  
+GET {{baseUrl}}/api/v1/orders
+
+###
+# Teste com Token ABC123 (limite: 50 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: abc123
+
+###
+# Teste com Token XYZ789 (limite: 200 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: xyz789
+
+###
+# Teste com Token Premium (limite: 1000 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: premium
+
+###
+# Teste com Token Regular (usa limite padrão: 100 req/s)
+GET {{baseUrl}}/api/v1/users
+API_KEY: regular-token
+
+###
+# Teste com Authorization Bearer (formato alternativo)
+GET {{baseUrl}}/api/v1/users
+Authorization: Bearer premium
+
+###
+# Requisições múltiplas para testar limite por IP
+# Execute estas rapidamente para ver o rate limiting em ação
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###  
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+GET {{baseUrl}}/api/v1/users
+
+###
+# Esta deve retornar 429 se o limite for 10 req/s
+GET {{baseUrl}}/api/v1/users
+
+###
+# Teste de diferentes endpoints
+GET {{baseUrl}}/api/v1/orders
+API_KEY: premium
