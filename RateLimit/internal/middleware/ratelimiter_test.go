@@ -1,4 +1,4 @@
-package tests
+package middleware
 
 import (
 	"encoding/json"
@@ -9,18 +9,9 @@ import (
 	"time"
 
 	"github.com/richardblynd/PosGO-Desafios/tree/main/ratelimiter/internal/config"
-	"github.com/richardblynd/PosGO-Desafios/tree/main/ratelimiter/internal/middleware"
 	"github.com/richardblynd/PosGO-Desafios/tree/main/ratelimiter/internal/ratelimiter"
 	"github.com/richardblynd/PosGO-Desafios/tree/main/ratelimiter/internal/storage"
 )
-
-// ErrorResponse represents the error response structure for tests
-type ErrorResponse struct {
-	Error     string `json:"error"`
-	Message   string `json:"message"`
-	Code      int    `json:"code"`
-	Timestamp string `json:"timestamp"`
-}
 
 type TestHandler struct {
 	called int
@@ -45,7 +36,7 @@ func TestMiddlewareIPRateLimit(t *testing.T) {
 	defer storage.Close()
 
 	rateLimiter := ratelimiter.New(storage, cfg)
-	middleware := middleware.NewRateLimiter(rateLimiter)
+	middleware := NewRateLimiter(rateLimiter)
 
 	handler := &TestHandler{}
 	wrappedHandler := middleware.Handler(handler)
@@ -122,7 +113,7 @@ func TestMiddlewareTokenRateLimit(t *testing.T) {
 	defer storage.Close()
 
 	rateLimiter := ratelimiter.New(storage, cfg)
-	middleware := middleware.NewRateLimiter(rateLimiter)
+	middleware := NewRateLimiter(rateLimiter)
 
 	handler := &TestHandler{}
 	wrappedHandler := middleware.Handler(handler)
@@ -208,7 +199,7 @@ func TestMiddlewareHeaders(t *testing.T) {
 	defer storage.Close()
 
 	rateLimiter := ratelimiter.New(storage, cfg)
-	middleware := middleware.NewRateLimiter(rateLimiter)
+	middleware := NewRateLimiter(rateLimiter)
 
 	handler := &TestHandler{}
 	wrappedHandler := middleware.Handler(handler)
@@ -252,7 +243,7 @@ func TestMiddlewareIPExtraction(t *testing.T) {
 	defer storage.Close()
 
 	rateLimiter := ratelimiter.New(storage, cfg)
-	middleware := middleware.NewRateLimiter(rateLimiter)
+	middleware := NewRateLimiter(rateLimiter)
 
 	handler := &TestHandler{}
 	wrappedHandler := middleware.Handler(handler)
@@ -297,7 +288,7 @@ func BenchmarkMiddleware(b *testing.B) {
 	defer storage.Close()
 
 	rateLimiter := ratelimiter.New(storage, cfg)
-	middleware := middleware.NewRateLimiter(rateLimiter)
+	middleware := NewRateLimiter(rateLimiter)
 
 	handler := &TestHandler{}
 	wrappedHandler := middleware.Handler(handler)

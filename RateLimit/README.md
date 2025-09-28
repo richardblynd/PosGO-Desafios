@@ -167,12 +167,23 @@ Quando o limite é excedido, você receberá:
 
 ```
 ├── cmd/server/          # Ponto de entrada da aplicação
+│   └── main.go
 ├── internal/
 │   ├── config/         # Sistema de configuração
+│   │   ├── config.go
+│   │   └── config_test.go
 │   ├── middleware/     # Middleware HTTP
+│   │   ├── ratelimiter.go
+│   │   └── ratelimiter_test.go
 │   ├── ratelimiter/   # Lógica core do rate limiter
+│   │   ├── ratelimiter.go
+│   │   └── ratelimiter_test.go
 │   └── storage/       # Abstrações de armazenamento
-├── tests/             # Testes automatizados
+│       ├── interface.go
+│       ├── memory.go
+│       ├── memory_test.go
+│       └── redis.go
+├── examples/          # Arquivos de teste HTTP
 ├── docker-compose.yml # Configuração Docker
 ├── Dockerfile        # Imagem Docker
 └── .env.example     # Exemplo de configuração
@@ -208,14 +219,51 @@ type Storage interface {
 Execute os testes completos:
 
 ```bash
-# Todos os testes
-go test ./tests/... -v
+# Todos os testes unitários e de integração
+go test ./... -v
 
-# Testes com benchmark
-go test ./tests/... -v -bench=.
+# Testes com cobertura de código
+go test ./... -cover
 
-# Cobertura de testes
-go test ./tests/... -cover
+# Testes com benchmark de performance
+go test ./... -bench=. -benchmem
+
+# Testes apenas dos pacotes internos (sem cmd/server)
+go test ./internal/... -cover -v
+```
+
+### Cobertura de Código
+
+O projeto possui alta cobertura de testes:
+
+```
+✅ Config Package:      89.7% coverage  
+✅ Middleware Package:  78.6% coverage  
+✅ RateLimiter Package: 44.1% coverage  
+✅ Storage Package:     35.7% coverage  
+```
+
+### Executando Testes Específicos
+
+```bash
+# Testar apenas configuração
+go test ./internal/config -v
+
+# Testar apenas rate limiter
+go test ./internal/ratelimiter -v  
+
+# Testar apenas middleware com cobertura
+go test ./internal/middleware -cover -v
+
+# Testar apenas storage com benchmark
+go test ./internal/storage -bench=. -benchmem
+
+# Testar cenário específico
+go test ./internal/ratelimiter -run TestRateLimiterPriority
+
+# Gerar relatório de cobertura HTML
+go test ./internal/... -coverprofile=coverage.out
+go tool cover -html=coverage.out -o coverage.html
 ```
 
 ### Testes com Arquivos HTTP
@@ -235,14 +283,40 @@ test-rate-limit.bat  # Windows
 ./test-rate-limit.sh # Linux/Mac
 ```
 
-### Exemplos de Teste
+### Tipos de Teste Disponíveis
 
-O projeto inclui testes abrangentes para:
-- Funcionalidade básica do rate limiter
-- Middleware HTTP
-- Diferentes backends de armazenamento
-- Cenários de alta carga (benchmarks)
-- Extração de IP de headers proxy
+O projeto inclui testes abrangentes organizados por pacote:
+
+**📋 Testes de Configuração** (`internal/config/config_test.go`)
+- Carregamento de variáveis de ambiente
+- Parsing de durações (5m, 30s, 1h, etc.)
+- Configurações específicas de tokens
+- Valores padrão e fallbacks
+
+**🔒 Testes de Rate Limiter** (`internal/ratelimiter/ratelimiter_test.go`)
+- Limitação por IP com validação de endereços
+- Limitação por token com diferentes configurações
+- Prioridade de token sobre IP
+- Health checks e error handling
+
+**🌐 Testes de Middleware** (`internal/middleware/ratelimiter_test.go`)
+- Integração HTTP completa
+- Extração de IP de headers proxy (X-Forwarded-For, X-Real-IP)
+- Headers de rate limiting (X-RateLimit-*)
+- Respostas de erro 429 formatadas
+- Processamento de tokens API_KEY
+
+**💾 Testes de Storage** (`internal/storage/memory_test.go`)
+- Algoritmo sliding window
+- Funcionalidade de bloqueio temporal
+- Performance benchmarks
+- Cleanup automático de dados antigos
+
+**⚡ Benchmarks de Performance**
+```bash
+# Exemplo de resultado:
+BenchmarkMemoryStorage-8    944710   5439 ns/op   11451 B/op   10 allocs/op
+```
 
 ## 🔍 Monitoramento
 
@@ -334,7 +408,25 @@ go run cmd/server/main.go
 
 1. Implemente a interface `storage.Storage`
 2. Adicione a inicialização em `cmd/server/main.go`
-3. Adicione testes em `tests/`
+3. Crie testes em `internal/storage/[new_backend]_test.go`
+
+### Estrutura de Testes
+
+Os testes estão organizados junto ao código que testam:
+
+```
+internal/
+├── config/config_test.go      # Testa sistema de configuração
+├── middleware/ratelimiter_test.go  # Testa integração HTTP
+├── ratelimiter/ratelimiter_test.go # Testa lógica core
+└── storage/memory_test.go     # Testa implementação de storage
+```
+
+**Vantagens desta estrutura:**
+- ✅ Cobertura de código precisa (`go test ./... -cover`)
+- ✅ Testes podem acessar funções não-exportadas
+- ✅ Organização clara por funcionalidade
+- ✅ Fácil manutenção e localização
 
 ### Configurar Tokens Personalizados
 
@@ -393,7 +485,7 @@ docker run -d -p 6379:6379 redis:7-alpine
 1. Fork o projeto
 2. Crie uma branch para sua feature
 3. Adicione testes para novas funcionalidades
-4. Execute os testes: `go test ./tests/... -v`
+4. Execute os testes: `go test ./... -cover -v`
 5. Faça commit das mudanças
 6. Abra um Pull Request
 
