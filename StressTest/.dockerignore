@@ -1,0 +1,30 @@
+# Ignorar binários compilados
+stresstest
+stresstest.exe
+*.exe
+
+# Ignorar arquivos de build
+build/
+dist/
+
+# Ignorar arquivos de desenvolvimento
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp
+
+# Ignorar arquivos de coverage
+*.out
+coverage.html
+
+# Ignorar arquivos do sistema operacional
+.DS_Store
+Thumbs.db
