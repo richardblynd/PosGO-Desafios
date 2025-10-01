@@ -1,0 +1,47 @@
+# Docker ignore file to exclude unnecessary files from build context
+
+# Docker volumes and data directories
+.docker/
+.docker/**
+
+# Git files
+.git/
+.gitignore
+
+# Environment files (will be copied explicitly in Dockerfile)
+.env*
+
+# Documentation
+README.md
+requisitos.txt
+
+# API test files  
+api/
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

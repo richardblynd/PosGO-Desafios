@@ -1,26 +1,87 @@
-version: '3'
-
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: orders
-      MYSQL_PASSWORD: root
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
-      - .docker/mysql:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+    networks:
+      - orders-network
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     restart: always
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 30s
+      retries: 3
+      interval: 10s
+    networks:
+      - orders-network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrations
+    container_name: migrate
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - orders-network
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ordersystem
+    restart: always
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      DB_DRIVER: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: orders
+      WEB_SERVER_PORT: :8000
+      GRPC_SERVER_PORT: 50051
+      GRAPHQL_SERVER_PORT: 8080
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - orders-network
+
+volumes:
+  mysql_data:
+
+networks:
+  orders-network:
+    driver: bridge
