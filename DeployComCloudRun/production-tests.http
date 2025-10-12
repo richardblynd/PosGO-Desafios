@@ -1,0 +1,33 @@
+### Weather API - Testes para Produção
+### Configure a URL do seu deploy no Cloud Run
+
+### Configuração da URL de produção
+@prodUrl = https://weather-api-xxxx-uc.a.run.app
+
+### ==============================================
+### TESTES EM PRODUÇÃO
+### ==============================================
+
+### Health Check - CEP de São Paulo
+GET {{prodUrl}}/weather/01310100
+Accept: application/json
+
+###
+
+### Teste com CEP do Rio de Janeiro
+GET {{prodUrl}}/weather/22070900
+Accept: application/json
+
+###
+
+### Teste de validação - CEP inválido
+GET {{prodUrl}}/weather/123
+Accept: application/json
+
+###
+
+### Teste de CEP não encontrado
+GET {{prodUrl}}/weather/99999999
+Accept: application/json
+
+###

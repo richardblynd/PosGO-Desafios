@@ -1,0 +1,87 @@
+### Weather API - Exemplos de Teste
+### Use a extensão REST Client no VS Code para executar essas requisições
+
+### Configuração da URL base
+@baseUrl = https://weather-api-1066335039627.us-central1.run.app
+
+### ==============================================
+### CASOS DE SUCESSO
+### ==============================================
+
+### CEP válido - São Paulo/SP
+GET {{baseUrl}}/weather/01310100
+Accept: application/json
+
+###
+
+### CEP válido - Rio de Janeiro/RJ  
+GET {{baseUrl}}/weather/20040020
+Accept: application/json
+
+###
+
+### CEP válido - Brasília/DF
+GET {{baseUrl}}/weather/70040010
+Accept: application/json
+
+###
+
+### CEP válido - Belo Horizonte/MG
+GET {{baseUrl}}/weather/30112000
+Accept: application/json
+
+###
+
+### CEP válido - Porto Alegre/RS
+GET {{baseUrl}}/weather/90010150
+Accept: application/json
+
+###
+
+### CEP válido com caracteres especiais
+GET {{baseUrl}}/weather/01310-100
+Accept: application/json
+
+### ==============================================
+### CASOS DE ERRO - CEP INVÁLIDO (422)
+### ==============================================
+
+### CEP muito curto (7 dígitos)
+GET {{baseUrl}}/weather/0131010
+Accept: application/json
+
+###
+
+### CEP muito longo (9 dígitos)
+GET {{baseUrl}}/weather/013101001
+Accept: application/json
+
+###
+
+### CEP com letras
+GET {{baseUrl}}/weather/0131010A
+Accept: application/json
+
+###
+
+### CEP vazio
+GET {{baseUrl}}/weather/
+Accept: application/json
+
+###
+
+### ==============================================
+### CASOS DE ERRO - CEP NÃO ENCONTRADO (404)
+### ==============================================
+
+### CEP inexistente (formato válido mas não existe)
+GET {{baseUrl}}/weather/99999999
+Accept: application/json
+
+###
+
+### CEP inexistente (outro exemplo)
+GET {{baseUrl}}/weather/00000000
+Accept: application/json
+
+###

@@ -1,0 +1,67 @@
+### Weather API - Testes de Performance
+### Testes para verificar comportamento sob diferentes condições
+
+### Configuração
+@baseUrl = http://localhost:8080
+
+### ==============================================
+### TESTES DE PERFORMANCE E STRESS
+### ==============================================
+
+### Múltiplas requisições simultâneas - CEP São Paulo
+GET {{baseUrl}}/weather/01310100
+
+###
+
+GET {{baseUrl}}/weather/01310100
+
+###
+
+GET {{baseUrl}}/weather/01310100
+
+###
+
+### Diferentes CEPs em sequência rápida
+GET {{baseUrl}}/weather/01310100
+
+###
+
+GET {{baseUrl}}/weather/20040020
+
+###
+
+GET {{baseUrl}}/weather/30112000
+
+###
+
+GET {{baseUrl}}/weather/40070110
+
+###
+
+GET {{baseUrl}}/weather/50010000
+
+###
+
+### ==============================================
+### TESTES DE EDGE CASES
+### ==============================================
+
+### CEP com zeros no início
+GET {{baseUrl}}/weather/01001000
+
+###
+
+### CEP com todos os dígitos iguais
+GET {{baseUrl}}/weather/11111111
+
+###
+
+### CEP limite inferior válido  
+GET {{baseUrl}}/weather/01000000
+
+###
+
+### CEP com padrão específico
+GET {{baseUrl}}/weather/12345678
+
+###
