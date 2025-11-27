@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -22,6 +23,8 @@ func NewWeatherAPIService() *WeatherAPIService {
 	if apiKey == "" {
 		apiKey = "demo_key"
 	}
+
+	log.Println("Using Weather API Key: ", apiKey)
 
 	return &WeatherAPIService{
 		client: &http.Client{

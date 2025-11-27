@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -53,6 +54,8 @@ func (h *WeatherHandler) GetWeatherByZipcode(w http.ResponseWriter, r *http.Requ
 	weather, err := h.weatherAPIService.GetCurrentWeather(cityQuery)
 	if err != nil {
 		h.sendErrorResponse(w, http.StatusInternalServerError, "weather service unavailable")
+		// log the error to console
+		log.Println(err)
 		return
 	}
 
