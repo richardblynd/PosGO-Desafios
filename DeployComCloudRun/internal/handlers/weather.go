@@ -45,6 +45,7 @@ func (h *WeatherHandler) GetWeatherByZipcode(w http.ResponseWriter, r *http.Requ
 			h.sendErrorResponse(w, http.StatusNotFound, "can not find zipcode")
 			return
 		}
+		log.Println(err)
 		h.sendErrorResponse(w, http.StatusInternalServerError, "internal server error")
 		return
 	}

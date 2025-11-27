@@ -41,7 +41,7 @@ func (v *ViaCEPService) GetLocationByZipcode(zipcode string) (*models.ViaCEPResp
 		return nil, err
 	}
 
-	if cepResp.Erro {
+	if cepResp.Erro == "true" {
 		return nil, fmt.Errorf("zipcode not found")
 	}
 
