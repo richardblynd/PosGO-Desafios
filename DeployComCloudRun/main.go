@@ -27,6 +27,6 @@ func main() {
 	weatherHandler := handlers.NewWeatherHandler()
 	router.HandleFunc("/weather/{zipcode}", weatherHandler.GetWeatherByZipcode).Methods("GET")
 
-	log.Printf("Server starting on port %s", port)
+	log.Printf("Server starting on port xxx %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }

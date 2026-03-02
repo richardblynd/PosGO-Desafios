@@ -1,0 +1,30 @@
+steps:
+  # Passo 1: Construir a imagem Docker (note o nome todo em minúsculo)
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
+      - '.'
+
+  # Passo 2: Fazer o push da imagem para o Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'push'
+      - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
+
+  # Passo 3: Fazer o deploy da imagem no Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'weather-api' # Nome que o serviço terá no Cloud Run
+      - '--image'
+      - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
+      - '--region'
+      - 'southamerica-east1'
+      - '--allow-unauthenticated' # Remova esta linha se a API for privada
+
+images:
+  - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
