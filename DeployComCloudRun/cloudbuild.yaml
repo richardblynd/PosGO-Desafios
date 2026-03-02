@@ -1,5 +1,5 @@
 steps:
-  # Passo 1: Construir a imagem Docker (note o nome todo em minúsculo)
+  # Passo 1: Construir a imagem Docker
   - name: 'gcr.io/cloud-builders/docker'
     args: 
       - 'build'
@@ -19,12 +19,16 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'weather-api' # Nome que o serviço terá no Cloud Run
+      - 'weather-api'
       - '--image'
       - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
       - '--region'
       - 'southamerica-east1'
-      - '--allow-unauthenticated' # Remova esta linha se a API for privada
+      - '--allow-unauthenticated'
 
 images:
   - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
+
+# CORREÇÃO DO ERRO DE LOGS AQUI:
+options:
+  logging: CLOUD_LOGGING_ONLY
