@@ -1,14 +1,16 @@
 steps:
   # Passo 1: Construir a imagem Docker
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'DeployComCloudRun'
     args: 
       - 'build'
       - '-t'
       - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
       - '.'
 
-  # Passo 2: Fazer o push da imagem para o Google Artifact Registry
+  # Passo 2: Fazer o push da imagem
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'DeployComCloudRun'
     args: 
       - 'push'
       - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
@@ -29,6 +31,5 @@ steps:
 images:
   - 'southamerica-east1-docker.pkg.dev/avid-influence-474915-r5/cloud-run-source-deploy/posgo-desafios/weather-api:$COMMIT_SHA'
 
-# CORREÇÃO DO ERRO DE LOGS AQUI:
 options:
   logging: CLOUD_LOGGING_ONLY
