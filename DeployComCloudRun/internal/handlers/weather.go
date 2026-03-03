@@ -46,7 +46,7 @@ func (h *WeatherHandler) GetWeatherByZipcode(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		log.Println(err)
-		h.sendErrorResponse(w, http.StatusInternalServerError, "internal server error")
+		h.sendErrorResponse(w, http.StatusInternalServerError, "internal server error: "+err.Error())
 		return
 	}
 
