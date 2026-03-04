@@ -2,8 +2,8 @@
 
 Este projeto implementa uma REST API em Go que recebe um CEP brasileiro, identifica a cidade correspondente e retorna a temperatura atual em Celsius, Fahrenheit e Kelvin.
 
-Deploy realizado no Google Cloud Run na URL:  
-https://weather-api-1066335039627.us-central1.run.app
+Deploy realizado no Google Cloud Run na URL:
+https://weather-api-1066335039627.southamerica-east1.run.app
 
 ## 🚀 Funcionalidades
 
