@@ -1,0 +1,84 @@
+services:
+  # Zipkin - Interface de tracing
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - observability-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9411/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics
+    depends_on:
+      zipkin:
+        condition: service_healthy
+    networks:
+      - observability-net
+
+  # Serviço A - Input handler
+  servico-a:
+    build:
+      context: ./servico-a
+      dockerfile: Dockerfile
+    container_name: servico-a
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SERVICE_B_URL=http://servico-b:8081
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+    depends_on:
+      - otel-collector
+      - servico-b
+    networks:
+      - observability-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Serviço B - Weather orchestration
+  servico-b:
+    build:
+      context: ./servico-b
+      dockerfile: Dockerfile
+    container_name: servico-b
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - WEATHER_API_KEY=${WEATHER_API_KEY:-c6f326b808d94a238f7144531251210}
+    depends_on:
+      - otel-collector
+    networks:
+      - observability-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  observability-net:
+    driver: bridge
