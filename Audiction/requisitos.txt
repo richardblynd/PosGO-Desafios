@@ -1,0 +1,13 @@
+1. Crie uma função (ou ajuste as existentes) para determinar a duração do leilão baseada em parâmetros definidos em variáveis de ambiente (ex: AUCTION_INTERVAL).
+2. Processamento em Background (Goroutine):
+2.1 Implemente uma Goroutine que será iniciada assim que um leilão for criado.
+2.2 Essa rotina deve monitorar o tempo e, quando a duração do leilão expirar, deve realizar o update no banco de dados alterando o status do leilão para "Closed" (fechado).
+3. Local da Implementação:
+3.1 Concentre seus esforços no arquivo: internal/infra/database/auction/create_auction.go. É aqui que a mágica deve acontecer.
+4. Requisitos de Testes
+4.1 Implemente um teste automatizado que comprove que o fechamento está ocorrendo.
+4.2 Cenário: Criar um leilão, aguardar o tempo configurado e verificar se o status mudou automaticamente para fechado sem intervenção manual.
+5. Documentação (README):
+5.1 Instruções para rodar o projeto.
+5.2 Instruções para configurar as variáveis de ambiente de tempo.
+5.3 Docker: O projeto deve estar configurado para rodar via Docker/Docker Compose.
